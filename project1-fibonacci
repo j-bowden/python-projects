@@ -1,0 +1,125 @@
+
+# this program is designed to print the Fibonacci sequence up to the term requested by the user input. it should contain measures for inappropriate
+# user inputs and increasing calculation time.
+# NB: initially written in IDLE Python 3.12
+
+# a quick intro to welcome the user. date from Wikipedia.
+print("Fibonacci numbers are extremely important in mathematics, and have been known to mathematicians since at least 200 BCE.")
+
+# we introduce a few common conventions for the boundary conditions.
+print("(1) Most commonly, the first term of the sequence takes the value 0, the second 1, and each subsequent term is the sum of the two which precede it.")
+print("(2) Some mathematicians take the first and second terms both to be 1.")
+print("(3) Fibonacci himself took the first term to be 1, and the second to be 2.")
+
+while True: # the actual program begins
+    while True: # determine the boundary conditions to be assumed and screen for invalid inputs
+        print("First you must decide which convention you are to use,")
+        print("selecting 1, 2 or 3 as appropriate, based on the key above.")
+        moderesponse = input("> ") # input variable
+
+        if moderesponse.isdecimal() and moderesponse in {"1", "2", "3"}:
+            mode = int(moderesponse) # restore the variable classified now as an integer
+            break # we stop asking when we got a valid input from the user
+        print("Choose only from the numbers 1, 2 or 3 as given in the key; do not input other things.")
+
+    while True: # determine the term the user wishes to compute
+        print("Enter the nth Fibonacci number you wish to calculate.")
+        print("")
+        print("As an example, printing 3 in mode 1 will return 0, 1, 2.")
+        ntermresponse = input("> ")
+
+        if ntermresponse.isdecimal() and int(ntermresponse) != 0:
+            nterm = int(ntermresponse) # restore the variable classified now as an integer
+            break # as before, we exit the loop once we receive a valid input
+        print("Print an integer greater than zero in order to proceed.")
+
+    # some special cases arise when nterm is 1 or 2, which vary depending on mode. these are dealt with here
+    if mode == 1:
+        if nterm == 1:
+            print("0")
+            print("")
+            print("The first Fibonacci number be 0.")
+            continue
+        elif nterm == 2:
+            print("0, 1")
+            print("")
+            print("The second Fibonacci number be 1.")
+            continue
+    elif mode == 2:
+        if nterm == 1:
+            print("1")
+            print("")
+            print("The first Fibonacci number be 1.")
+            continue
+        elif nterm == 2:
+            print("1, 1")
+            print("")
+            print("The second Fibonacci number be 1.")
+            continue
+    elif mode == 3:
+        if nterm == 1:
+            print("1")
+            print("")
+            print("The first Fibonacci number be 1.")
+            continue
+        elif nterm == 2:
+            print("1, 2")
+            print("")
+            print("The second Fibonacci number be 2.")
+        # this is sufficient, as we screened for other outcomes earlier on
+
+    # here we warn the user that the run time may be long, and give them a means of terminating the program early.
+
+    if nterm > 5000: # note 5000 is chosen entirely arbitrarily
+        print("Beware ye who dare seek to print the Fibonaccis beyond five thousand in their number.")
+        print("If ye wish to turn back before yonder counting attain its zenith,")
+        print("press Ctrl+C, and this machine shall release thee from its grasp.") # the piratelike print-voice is for my own amusement alone
+        input("Press Enter to take the plunge!")
+
+    # finally, we calculate the nth term
+    
+    # to test a different approach, I use the same program for all 3 modes, and fine tune it only at the end, unlike before
+    # where I split into the 3 modes at the start
+
+    before2 = 0
+    before1 = 1
+    atterm = 2 # this is a counter for as the program approaches atterm = n.
+            # it starts at 2 because I dealt with the small cases already, above.
+
+    print("0, 1, ", end="") # display the first two terms in mode 1
+    print("1, 1, ", end="") # display the first two terms in mode 2
+    print("1, 2, ", end="") # display the first two terms in mode 3
+
+    # and the rest?
+    while True:
+        nextterm = before2 + before1 # the defining recurrence relation of the Fibonaccis
+        atterm += 1 # counter ticks up 1
+
+        # display the next number
+        print(nextterm, end="")
+
+        # have we reached the nth?
+        if atterm == nterm:
+            if mode == 1:
+                print("")
+                print("The Fibonacci number whose term be ", nterm, "is ", nextterm, ".")
+            elif mode == 2:
+                nextterm += before1
+                print(nextterm, end="")
+                print("")
+                print("The Fibonacci number whose term be ", nterm, "is ", nextterm, ".") # add on one more term
+            elif mode == 3:
+                nextterm1 = nextterm + before1
+                print(nextterm1, end="")
+                nextterm2 = nextterm1 + nextterm
+                print(nextterm2, end="")
+                print("")
+                print("The Fibonacci number whose term be ", nterm, "is ", nextterm2, ".") # add on two more terms
+            break
+
+        # print a comma between terms in the sequence, for neatness
+        print(", ", end="")
+
+        # update the terms established earlier
+        before2 = before1
+        before1 = nextterm
