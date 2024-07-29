@@ -1,0 +1,153 @@
+
+# this program intends to automate statistical hypothesis testing
+# the program should cater to both one- and two-tailed tests, on binomial
+# (and normal) distributions, at a variety of significance levels.
+
+# NB: initially written in Python 3.12.4
+
+# introduce the user to the concept of hypothesis testing.
+print("Statistical hypothesis testing is used to guide judgement in whether observed data supports an existing model.")
+print("")
+print("A null hypothesis is defined, which is generally the nature of the existing model. The alternative hypothesis is the complement of the null.")
+
+def factorial(n): # use later to compute nCr for binomial probabilities.
+    if n < 2:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+def isfloat(n): # define to extend the .isdecimal() function to recognise "."
+    d = 0
+    for d in range(0,len(n)):
+        if n[d] not in {"0","1","2","3","4","5","6","7","8","9","0","."}:
+            return False
+    return True
+
+while True: # begin
+    while True: # determine the type of distribution at hand
+        print("Is the data in question distributed binomially (B) or normally (N)?")
+        datatype = input("> ").upper()
+
+        if datatype[0] in {"B","N"}:
+            datatype = datatype[0] # use B for binomial data and N for normal data
+            break
+        print("This program deals only with data modelled by binomial or normal distributions. Select one of these distributions.")
+
+        if datatype == "B":
+            break
+        print("Apologies! Normal hypothesis testing is still under construction: try again later.")
+
+    if datatype == "B": # run binomial hypothesis test
+
+    # a binomial hypothesis test calculates the probability under Ho (null hypothesis) of an observed event, and compares this to the given significance level.
+
+       print("You have selected the binomial data option.")
+       print("")
+
+       while True:
+           print("Input the total sample size, n.") # for data modelled X~B(n,p), determine n.
+           n_string = input("> ")
+           if n_string.isdecimal():
+               n = int(n_string)
+               break
+           print("The total sample size must be input as a number. Try again.")
+
+       print("")
+        
+       while True:
+           print("Input the null hypothesis value for the probability of a positive outcome, p.") # for data modelled X~B(n,p), determine p.
+           pho_string = input("> ")
+           if isfloat(pho_string) and 0 <= float(pho_string) and float(pho_string) <= 1:
+              pho = float(pho_string)
+              break
+           print("The probability of a positive outcome must be input as a number between 0 and 1. Try again.")
+
+       print("")
+        
+       while True:
+           print("Input the observed number of positive outcomes.") # determine x, for use in P(X >= x) or as required later.
+           out_string = input("> ")
+           if out_string.isdecimal() and float(out_string) <= n:
+               out = int(out_string)
+               break
+           print("The observed number of positive outcomes must be a number less than or equal to the total sample size. Try again.")
+
+       print("")
+        
+       while True:
+           print("Are you performing a (1) one- or (2) two-tailed test? Select 1 or 2 as appropriate.")
+           tailed_string = input("> ")
+           if tailed_string.isdecimal() and tailed_string in {"1","2"}:
+               tailed = int(tailed_string)
+               break
+           print("Select only from the options 1 and 2, as appropriate for the number of tails of the test.")
+
+       print("")
+
+       while True: # determine significance level.
+           print("Enter the significance level of the test about to be performed. Do not adjust for one-/two-tailedness. Enter as a decimal only.")
+           sig_string = input("> ")
+           if isfloat(sig_string) and 0 <= float(sig_string) and float(sig_string) <= 1:
+               sig = float(sig_string)
+               break
+           print("The significance level must be a decimal between 0 and 1. Do not write as a fraction or percentage and follow the formatting instructions.")
+                  
+
+       if tailed == 1: # perform one-tailed binomial tests
+           while True: # determine upper- or lower-tailed.
+               print("If the alternative hypothesis is that p < ", pho, " then press 1. Else press 2.")
+               tailedway_string = input("> ")
+
+               if tailedway_string.isdecimal() and tailedway_string in {"1", "2"}:
+                   tailedway = int(tailedway_string)
+                   break
+               print("Select only from the options 1 and 2, as appropriate.")
+
+           print("")
+           pvalue = 0
+
+           if tailedway == 1: # perform lower-tailed binomial test
+               a = 0
+               for a in range(out+1): # sum over the values of variable X in the lower tail critical region to out
+                   pvalue += (factorial(n)/(factorial(a)*factorial(n-a)))*(pho**out)*((1-pho)**(n-out)) # compute prob as per binomial formula
+                   a += 1 # counter ticks up 1
+               if pvalue <= sig: # note equality also rejects the null hypothesis
+                   print("The probability of your observation is ", pvalue, " under the null hypothesis. This is within your stated")
+                   print("significance level of ", sig, ". Therefore reject the null hypothesis.")
+                   print("Recall the alternative hypothesis states that p < ", pho, ".")
+               else:
+                   print("The probability of your observation is ", pvalue, " under the null hypothesis. This exceeds your stated")
+                   print("significance level of ", sig, ". Therefore do not reject the null hypothesis.")
+
+           else: # perform upper-tailed binomial test
+               a = out
+               for a in range(out, n+1): # sum over the values of variable X in the upper tail critical region to sample size n
+                   pvalue += (factorial(n)/(factorial(a)*factorial(n-a)))*(pho**out)*((1-pho)**(n-out)) # compute prob as per binomial formula
+                   a += 1 # counter ticks up 1
+               if pvalue <= sig: # again note equality also rejects null hypothesis
+                   print("The probability of your observation is ", pvalue, " under the null hypothesis. This is within your stated")
+                   print("significance level of ", sig, ". Therefore reject the null hypothesis.")
+                   print("Recall the alternative hypothesis states that p > ", pho, ".")
+               else:
+                   print("The probability of your observation is ", pvalue, " under the null hypothesis. This exceeds your stated")
+                   print("significance level of ", sig, ". Therefore do not reject the null hypothesis.")
+
+       else: # perform two-tailed binomial test
+           pvalue = 0
+           if pho != 0.5:
+               a = 0
+               boundaryp = (factorial(n)/(factorial(out)*factorial(n-out)))*(pho**out)*((1-pho)**(n-out)) # the exact binomial prob of the observed outcome
+               for a in range(n+1):
+                   eventp = (factorial(n)/(factorial(a)*factorial(n-a)))*(pho**a)*((1-pho)**(n-a)) # prob of exactly a many outcomes
+                   a += 1 # counter ticks up 1
+                   if eventp <= boundaryp:
+                       pvalue += eventp # this event is 'more extreme' than our observed outcome
+                   else:
+                       pvalue = pvalue
+               if pvalue <= sig: # do not half significance level as our method calculcates the combined critical probability
+                   print("The probability of your observation is ", pvalue, " under the null hypothesis. This is within your stated")
+                   print("significance level of ", sig, ". Therefore reject the null hypothesis.")
+                   print("Recall the alternative hypothesis states that p is not equal to ", pho, ".")
+               else:
+                   print("The probability of your observation is ", pvalue, " under the null hypothesis. This exceeds your stated")
+                   print("significance level of ", sig, ". Therefore do not reject the null hypothesis.")
