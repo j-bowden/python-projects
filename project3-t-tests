@@ -1,0 +1,330 @@
+
+# this program endeavours to automate statistical hypothesis testing via the "t-test".
+# details of the computational formula can be found at: www.investopedia.com/terms/t/t-test.asp
+
+# the program should: decide on the appropriate type of the t-test for the data based on a series of questions to the user;
+# obtain and compute the necessary values; conduct the 3 types of test efficiently; and report interpreted findings to the user.
+
+# NB: initially written in Python 3.12.4
+
+import math # we require the standard library to take sqrt when calculating standard deviations.
+
+def isfloat(n): # define to extend the .isdecimal() function to recognise "." - recall this was first used in project2-binomial-hypothesis-test.
+    d = 0
+    for d in range(0,len(n)):
+        if n[d] not in {"0","1","2","3","4","5","6","7","8","9","0","."}:
+            return False
+    return True
+
+while True: # program begins
+    # begin with an abstract to explain the t-test conceptually.
+    print("A t-test is a type of statistical hypothesis test to determine whether the difference between the means of two sample sets of data")
+    print("is likely to be statistically significant in the context of the two wider populations.")
+    print("")
+
+    print("The null hypothesis always asserts that the two population means are equal.")
+    print("")
+    
+    print("Before proceeding, ensure that the following assumptions of the t-test are met:")
+    print("1. The data collected is continuous.")
+    print("2. The sample set is chosen randomly from the wider population in both cases.")
+    print("3. The data is normally distributed.")
+    print("4. Equal or homogeneous variance exists when the standard deviations of the two data sets is equal.")
+    print("")
+    
+    print("If one of these assumptions is not met, consult a different statistical procedure: the t-test is not appropriate.")
+    print("")
+
+    print("There are three main types of t-test, which apply under different circumstances.")
+    print("The following questions should determine which t-test to proceed with.")
+    print("")
+    
+    while True:
+        print("Are the two sample sets the same, or related, and of the same size? Respond with yes/no accordingly.")
+        depend = input("> ").upper()
+        if depend[0] in {"Y","N"}:
+            depend = depend[0]
+            break
+        print("Respond only with yes or no, as appropriate to the question.")
+
+    if depend == "Y": # begin a paired/correlated (dependent) t-test.
+        print("In this case, a correlated (dependent) t-test should be appropriate.")
+        print("")
+        while True:
+           print("Enter the size of the samples, as an integer.")
+           samplesize = input("> ")
+           if samplesize.isdecimal() and int(samplesize) > 1:
+               n = int(samplesize)
+               break
+           print("The sample size must be input as an integer, and there must be at least 2 samples.")
+
+        d = 0
+        e = 0
+        sampleset1 = []
+        sampleset2 = []
+        for d in range(0,n):
+            while True:
+                print("Enter the value of element ", d+1, " of the first sample set.")
+                sample1 = input("> ")
+                if isfloat(sample1):
+                    sample1 = float(sample1)
+                    break
+                print("T-tests deal only in continuous data. The value must be entered as a decimal.")
+            sampleset1.append(sample1)
+            d += 1
+        print("The first sample set is ", sampleset1)
+        print("")
+        for e in range(0,n):
+            while True:
+                print("Enter the value of element ", e+1, " of the second sample set.")
+                sample2 = input("> ")
+                if isfloat(sample2):
+                    sample2 = float(sample2)
+                    break
+                print("T-tests deal only in continuous data. The value must be entered as a decimal.")
+            sampleset2.append(sample2)
+            e += 1
+        print("The second sample set is ", sampleset2)
+        print("")
+
+        # calculate the arithmetic means of the two sample sets.
+
+        d = 0
+        e = 0
+        total1 = 0
+        total2 = 0
+        for d in range(0,n):
+            total1 += sampleset1[d]
+            d += 1
+        mean1 = total1/n
+        for e in range(0,n):
+            total2 += sampleset2[e]
+            e += 1
+        mean2 = total2/n # same n deliberate.
+
+        print("The sample sets have arithmetic means ", mean1, " and ", mean2, " respectively.")
+        print("")
+
+        diffmean = mean1 - mean2 # the mean difference is allowed to take negative values, so no modulus function required.
+
+        # calculate the standard deviation of the differences between the paired values of the sample sets.
+
+        d = 0
+        diffset = []
+        for d in range(0,n):
+            valuediff = sampleset1[d] - sampleset2[d]
+            diffset.append(valuediff)
+            d += 1
+        diffvar = 0
+        e = 0
+        for e in range(0,n):
+            diffvar += (diffset[e]-diffmean)**2
+            e += 1
+        diffvar = diffvar/(n-1)
+        diffsd = math.sqrt(diffvar)
+
+        # calculate the test statistic, recalling the formula in the link at the beginning.
+
+        teststat = diffmean/(diffsd/math.sqrt(n))
+        print("These data yield a test statistic of ", teststat, " with ", n-1, " degrees of freedom.")
+        print("Consult a statistical table to obtain the probability of observing this test statistic under the null hypothesis.")
+        print("")
+        print("Qualitatively speaking, a larger test statistic corresponds to a greater difference between the populations represented by the two samples.")
+
+    else: # it remains to choose between equal and unequal variance (both independent) t-tests.
+        while True:
+            print("Are the two sample sets of the same size? Respond with yes/no accordingly.")
+            samesize = input("> ").upper()
+            if samesize[0] in {"Y","N"}:
+                samesize = samesize[0]
+                break
+            print("Respond only with yes or no, as appropriate to the question.")
+
+        while True:
+            print("Do the two sample sets have the same or similar variances? Respond also with yes/no accordingly.")
+            samevar = input("> ").upper()
+            if samevar[0] in {"Y","N"}:
+                samevar = samevar[0]
+                break
+            print("Respond only with yes or no, as appropriate to the question.")
+
+        if samesize == "N" and samevar == "N": # begin an unequal variance t-test.
+            print("In this case, it should be appropriate to apply an unequal variance t-test, also sometimes")
+            print("known as Welch's t-test.")
+            print("")
+
+            while True:
+                print("Enter the size of the first sample, as an integer.")
+                samplesize1 = input("> ")
+                if samplesize1.isdecimal() and int(samplesize1) > 1:
+                    n1 = int(samplesize1)
+                    break
+                print("The sample size must be input as an integer, and there must be at least 2 samples.")
+        
+            while True:
+                print("Enter the size of the second sample, as an integer.")
+                samplesize2 = input("> ")
+                if samplesize2.isdecimal() and int(samplesize2) > 1:
+                    n2 = int(samplesize2)
+                    break
+                print("The sample size must be input as an integer, and there must be at least 2 samples.")
+
+            d = 0
+            e = 0
+            sampleset1 = []
+            sampleset2 = []
+            for d in range(0,n1):
+                while True:
+                    print("Enter the value of element ", d+1, " of the first sample set.")
+                    sample1 = input("> ")
+                    if isfloat(sample1):
+                        sample1 = float(sample1)
+                        break
+                    print("T-tests deal only in continuous data. The value must be entered as a decimal.")
+                sampleset1.append(sample1)
+                d += 1
+            print("The first sample set is ", sampleset1)
+            print("")
+            for e in range(0,n2):
+                while True:
+                    print("Enter the value of element ", e+1, " of the second sample set.")
+                    sample2 = input("> ")
+                    if isfloat(sample2):
+                        sample2 = float(sample2)
+                        break
+                    print("T-tests deal only in continuous data. The value must be entered as a decimal.")
+                sampleset2.append(sample2)
+                e += 1
+            print("The second sample set is ", sampleset2)
+            print("")
+
+            d = 0
+            e = 0
+            total1 = 0
+            total2 = 0
+            for d in range(0,n1):
+                total1 += sampleset1[d]
+                d += 1
+            for e in range(0,n2):
+                total2 += sampleset2[e]
+                e += 1
+            mean1 = total1/n1
+            mean2 = total2/n2
+
+            print("The sample sets are calculated to have arithmetic means ", mean1, " and ", mean2, " respectively.")
+            print("")
+
+            d = 0
+            e = 0
+            var1 = 0
+            var2 = 0
+            for d in range(0,n1):
+                var1 += (sampleset1[d]-mean1)**2
+                d += 1
+            for e in range(0,n2):
+                var2 += (sampleset2[e]-mean2)**2
+                e += 1
+            var1 = var1/(n1-1)
+            var2 = var2/(n2-1) # note we insisted on at least 2 samples, preventing zero errors here.
+
+            print("The sample sets are calculated to have variances ", var1, " and ", var2, " respectively.")
+            print("")
+
+            teststat = (mean1 - mean2)/(math.sqrt((var1/n1)+(var2/n2)))
+            degfree = ((((var1**2)/n1)+((var2**2)/n2)**2)/((((((var1**2)/n1))**2)/(n1-1))+(((var2**2)/n2)**2)/(n2-1)))
+            # breaking these computations over multiple lines may be less unsightly.
+            print("These data yield a test statistic of ", teststat, " with ", degfree, " degrees of freedom.")
+            print("Consult a statistical table to obtain the probability of observing this test statistic under the null hypothesis.")
+            print("")
+            print("Qualitatively speaking, a larger test statistic corresponds to a greater difference")
+            print("between the populations represented by the two samples.")
+
+        else: # begin an equal variance / 'pooled' t-test
+            print("In this case, it should be appropriate to apply an equal variance t-test, also sometimes")
+            print("known as a 'pooled' t-test.")
+            print("")
+
+            while True:
+                print("Enter the size of the first sample, as an integer.")
+                samplesize1 = input("> ")
+                if samplesize1.isdecimal() and int(samplesize1) > 1:
+                    n1 = int(samplesize1)
+                    break
+                print("The sample size must be input as an integer, and there must be at least 2 samples.")
+        
+            while True:
+                print("Enter the size of the second sample, as an integer.")
+                samplesize2 = input("> ")
+                if samplesize2.isdecimal() and int(samplesize2) > 1:
+                    n2 = int(samplesize2)
+                    break
+                print("The sample size must be input as an integer, and there must be at least 2 samples.")
+
+            d = 0
+            e = 0
+            sampleset1 = []
+            sampleset2 = []
+            for d in range(0,n1):
+                while True:
+                    print("Enter the value of element ", d+1, " of the first sample set.")
+                    sample1 = input("> ")
+                    if isfloat(sample1):
+                        sample1 = float(sample1)
+                        break
+                    print("T-tests deal only in continuous data. The value must be entered as a decimal.")
+                sampleset1.append(sample1)
+                d += 1
+            print("The first sample set is ", sampleset1)
+            print("")
+            for e in range(0,n2):
+                while True:
+                    print("Enter the value of element ", e+1, " of the second sample set.")
+                    sample2 = input("> ")
+                    if isfloat(sample2):
+                        sample2 = float(sample2)
+                        break
+                    print("T-tests deal only in continuous data. The value must be entered as a decimal.")
+                sampleset2.append(sample2)
+                e += 1
+            print("The second sample set is ", sampleset2)
+            print("")
+
+            d = 0
+            e = 0
+            total1 = 0
+            total2 = 0
+            for d in range(0,n1):
+                total1 += sampleset1[d]
+                d += 1
+            for e in range(0,n2):
+                total2 += sampleset2[e]
+                e += 1
+            mean1 = total1/n1
+            mean2 = total2/n2
+
+            print("The sample sets are calculated to have arithmetic means ", mean1, " and ", mean2, " respectively.")
+            print("")
+
+            d = 0
+            e = 0
+            var1 = 0
+            var2 = 0
+            for d in range(0,n1):
+                var1 += (sampleset1[d]-mean1)**2
+                d += 1
+            for e in range(0,n2):
+                var2 += (sampleset2[e]-mean2)**2
+                e += 1
+            var1 = var1/(n1-1)
+            var2 = var2/(n2-1) # note we insisted on at least 2 samples, preventing zero errors here.
+
+            print("The sample sets are calculated to have variances ", var1, " and ", var2, " respectively.")
+            print("")
+
+            degfree = n1 + n2 - 2
+            teststat = (mean1 - mean2)/math.sqrt((1/n2)+((1/n1)*((((n1-1)*(var1**2))+((n2-1)*(var2**2)))/degfree)))
+            print("These data yield a test statistic of ", teststat, " with ", degfree, " degrees of freedom.")
+            print("Consult a statistical table to obtain the probability of observing this test statistic under the null hypothesis.")
+            print("")
+            print("Qualitatively speaking, a larger test statistic corresponds to a greater difference")
+            print("between the populations represented by the two samples.")
