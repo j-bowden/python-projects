@@ -1,0 +1,226 @@
+# This program is designed to run the RSA public-key cryptosystem.
+# The version of RSA employed is that based exclusively on the Euler totient function: no reference is made directly or indirectly to the Carmichael totient function.
+
+# The program includes a test for primality, calculations based on modular arithmetic, facilities for both encryption and decryption and
+# appropriate warnings (including computation time -based) to the user.
+
+# NB: originally written for Python 3.12.4
+
+import math
+
+def prime(n): # test for primality of n by trial division up to the square root by odds and 2.
+    if n == 1:
+        return False
+    else:
+        for d in range(2, int(math.sqrt(n)) + 1):
+            if d % 2 != 0 or d == 2:
+                if n % d == 0:
+                    return False
+        return True
+
+def coprime(a, b): # test for coprimality of a and b.
+    x = min(a, b)
+    y = max(a, b)
+    if x == 1:
+        return True
+    elif prime(x):
+        if y % x == 0:
+            return False
+        else:
+            return True
+    else:
+        for d in range(2, int(math.sqrt(x)) + 1):
+            if d % 2 != 0 or d == 2:
+                if a % d == 0 and b % d == 0:
+                    return False
+        return True
+
+def decoder(e, p): # calculates the decoding exponent for an encoding exponent e and p the Euler totient function of mod (defined later)
+    for d in range(1,p):
+        if (e * d) % p == 1:
+            return d
+
+while True:
+    print("The RSA (Rivest-Shamir-Adleman) scheme is a public-key cryptosystem used for secure data transmission.")
+    print("")
+    print("In using this program, it is assumed that any message to be used has already been appropriately encoded as a positive integer.")
+    print("")
+    print("First, you must enter two large primes.")
+    print("")
+    print("The system will verify that the numbers you enter are indeed prime. Be ware that the larger a prime you choose,")
+    print("the longer the verification process is likely to take to execute. Your patience is appreciated.")
+
+    while True:
+        print("Please enter the first prime.")
+        prime_input = input("> ")
+
+        if prime_input.isdecimal():
+            prime_input = int(prime_input)
+            if prime(prime_input):
+                if prime_input >= 10 ** 6:
+                    p_prime = prime_input
+                    break
+                else:
+                    print("This prime is less than a million. Enter a larger prime to improve the security of your encryption.")
+            else:
+                print("Invalid input. The integer you enter must be a prime.")
+        else:
+            print("Invalid input. You are asked to enter a prime, so your input must therefore be a positive integer.")
+
+    while True:
+        print("Please enter the second prime.")
+        prime_input = input("> ")
+
+        if prime_input.isdecimal():
+            prime_input = int(prime_input)
+            if prime(prime_input):
+                if prime_input >= 10 ** 6:
+                    if abs(p_prime - prime_input) / p_input > 0.5:
+                        q_prime = prime_input
+                        break
+                    else:
+                        print("The difference between the primes you have entered is relatively small.")
+                        print("")
+                        print("To improve the security of your encryption, it is recommended to increase this difference.")
+                        print("")
+                        print("Do you still wish to proceed with the existing prime? Press 1 to proceed, or 2 to enter a new prime.")
+                        proceed = input("> ").upper()
+
+                        if proceed[1] in {"1", "2"}:
+                            if proceed[1] == "1":
+                                q_prime = prime_input
+                                break
+                        else:
+                            print("Invalid input. Redirecting anyway:")
+                            print("")
+                else:
+                    print("This prime is less than a million. Enter a larger prime to improve the security of your encryption.")
+            else:
+                print("Invalid input. The integer you enter must be a prime.")
+        else:
+            print("Invalid input. You are asked to enter a prime, so your input must therefore be an integer.")
+
+    print("")
+    print("Caution! These primes should not be released, in order to preserve the integrity of your cryptosystem.")
+
+    mod = p_prime * q_prime
+    phi_mod = (p_prime - 1) * (q_prime - 1)
+
+    print("")
+    print("The modulus of this encryption is ", mod, " with corresponding key length ", len(mod), ".")
+    print("")
+    print("The modulus should be released to enable data transmission.")
+    print("")
+
+    print("It is also necessary to generate an encoding exponent.")
+    print("")
+
+    while True:
+        print("Pick an encoding exponent, e.")
+        e_cand = input("> ")
+
+        if not e_cand.isdecimal():
+            print("Invalid input. The encoding exponent must also be a positive integer.")
+        elif int(e_cand) < 1:
+            print("Invalid input. The encoding exponent must also be a positive integer. Zero is not a positive integer.")
+        else:
+            e = int(e_cand)
+            if coprime(phi_mod, e):
+                break
+            else:
+                print("It is necessary that the encoding exponent is coprime to the Euler totient function of the modulus. Please try again.")
+
+    print("The encoding exponent of this encryption is ", e)
+    print("")
+    print("It now falls to the decryptor to publish their encryption scheme, namely the ordered pair (n, e), in order to begin data transmission.")
+    print("")
+    print("Cryptosystem initialisation is now complete.")
+    print("")
+
+    while True:
+        print("Do you wish to encrypt or decrypt?")
+        crypt = input("> ").upper()
+
+        if crypt[1] == "E":
+            crypt = "E"
+            break
+        elif crypt[1] == "D":
+            crypt = "D"
+            break
+        else:
+            print("Invalid input. Choose only from the available options.")
+
+    if crypt == "E":
+        while True:
+            print("You have selected message encryption. Be ware that the magnitude of the message must be strictly less than ", len(mod))
+            print(" in order to guarantee successful decryption. Recall messages must already have been encoded before starting.")
+            print("")
+
+            while True:
+                print("Enter the message to be encrypted.")
+                mess = input("> ")
+
+                if mess.isdecimal() and int(mess) < len(mod):
+                    mess = int(mess)
+                    break
+                print("Invalid input. The message must be encoded as an integer of the appropriate length.")
+
+            mess_en = (mess ** e) % mod
+
+            print("The encrypted message reads ", mess_en, ".")
+            print("")
+
+            while True:
+                print("Would you like to encrypt another message?")
+                again = input("> ").upper()
+
+                if again[1] == "Y":
+                    again = "Y"
+                    break
+                elif again[1] == "N":
+                    again = "N"
+                    break
+                print("Invalid input. Select yes or no.")
+
+            if again == "N":
+                print("Thank you for using this program.")
+            print("You have opted to encrypt another message. Reloading...")
+            print("")
+    
+    else:
+        d = decoder(e, phi_mod)
+        while True:
+            print("You have selected message decryption. Be ware that the magnitude of the message must be strictly less than ", len(mod))
+            print(" in order to guarantee successful decryption. Recall messages must already have been encoded before starting.")
+            print("")
+
+            while True:
+                print("Enter the message to be decrypted.")
+                mess = input("> ")
+
+                if mess.isdecimal() and int(mess) < len(mod):
+                    mess = int(mess)
+                    break
+                print("Invalid input. The message must be encoded as an integer of the appropriate length.")
+        
+            mess_de = (mess ** (e * d)) % mod
+    
+            print("The decrypted message reads ", mess_de, ".")
+            print("")
+
+            while True:
+                print("Would you like to decrypt another message?")
+                again = input("> ").upper()
+
+                if again[1] == "Y":
+                    again = "Y"
+                    break
+                elif again[1] == "N":
+                    again = "N"
+                    break
+                print("Invalid input. Select yes or no.")
+
+            if again == "N":
+                print("Thank you for using this program.")
+            print("You have opted to decrypt another message. Reloading...")
+            print("")
