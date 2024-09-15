@@ -1,11 +1,14 @@
 # This program is designed to generate a GUI using the "tkinter" package
 # to display a basic interactive calculator. For now, the mathematical
-# capabilities of the calculator are limited to basic arithmetic.
+# capabilities of the calculator are limited to basic arithmetic, alongside
+# a selection of built-in mathematical functions.
 
 # The program should allow for a display, have interactable buttons to update 
 # said display, perform and display computations as entered, be able to
 # clear the display without returning the value of the expression, and respond
 # sensibly to nonsensical inputs (e.g. attempts to divide by zero, etc.)
+
+# note that trigonometric functions operate using degrees in numpy
 
 # NB: originally programmed in Python 3.12.4 using tkinter
 
@@ -13,11 +16,16 @@ import tkinter
 
 from tkinter import *
 
+import numpy as nm
+
+import math
+
 expression = ""
 
 def operate(n): # getting the calculator to update the required calculation
     global expression
-    expression += str(n)
+    n = str(n)
+    expression += n
     answer.set(expression)
 
 def equals(): # getting the calculator to compute a calculation we input
@@ -28,7 +36,7 @@ def equals(): # getting the calculator to compute a calculation we input
                         # ready for another computation
 
     except: # in case of division by zero error etc.
-        answer.set("error")
+        answer.set("MATH ERROR")
         expression = ""
 
 def clear(): # enable the user to start over
@@ -42,7 +50,7 @@ gui.configure(background="black")
 
 gui.title("Basic Arithmetic Calculator")
 
-gui.geometry("340x150")
+gui.geometry("340x250")
 
 answer = StringVar()
 
@@ -105,16 +113,88 @@ slash = Button(gui, text = " / ", fg = "brown", bg = "gold",
                    command=lambda: operate("/"), height = 1, width = 7)
 slash.grid(row=5, column=3)
 
-clr = Button(gui, text = "Clear", fg = "brown", bg = "gold",
-                   command=lambda: clear(), height = 1, width = 7)
-clr.grid(row=5, column=1)
+brack_open = Button(gui, text = " ( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("("), height = 1, width = 7)
+brack_open.grid(row=5, column=1)
 
-eq = Button(gui, text = " = ", fg = "brown", bg = "gold",
-                   command=lambda: equals(), height = 1, width = 7)
-eq.grid(row=5, column=2)
+brack_close = Button(gui, text = " ) ", fg = "brown", bg = "gold",
+                    command=lambda: operate(")"), height = 1, width = 7)
+brack_close.grid(row=5, column=2)
+
+exp_to = Button(gui, text = " ^ ", fg = "brown", bg = "gold",
+                    command=lambda: operate("**"), height = 1, width = 7)
+exp_to.grid(row=6, column=3)
+
+sine = Button(gui, text = " sin( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.sin("), height = 1, width = 7)
+sine.grid(row=6, column=0)
+
+cosine = Button(gui, text = " cos( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.cos("), height = 1, width = 7)
+cosine.grid(row=6, column=1)
+
+tang = Button(gui, text = " tan( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.tan("), height = 1, width = 7)
+tang.grid(row=6, column=2)
+
+hypsine = Button(gui, text = " sinh( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.sinh("), height = 1, width = 7)
+hypsine.grid(row=7, column=0)
+
+hypcosine = Button(gui, text = " cosh( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.cosh("), height = 1, width = 7)
+hypcosine.grid(row=7, column=1)
+
+hyptang = Button(gui, text = " tanh( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.tanh("), height = 1, width = 7)
+hyptang.grid(row=7, column=2)
+
+asine = Button(gui, text = " arcsin( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.arcsin("), height = 1, width = 7)
+asine.grid(row=8, column=0)
+
+acosine = Button(gui, text = " arccos( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.arccos("), height = 1, width = 7)
+acosine.grid(row=8, column=1)
+
+atang = Button(gui, text = " arctan( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.arctan("), height = 1, width = 7)
+atang.grid(row=8, column=2)
+
+asHine = Button(gui, text = " arsinh( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.arcsinh("), height = 1, width = 7)
+asHine.grid(row=9, column=0)
+
+acosHine = Button(gui, text = " arcosh( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.arccosh("), height = 1, width = 7)
+acosHine.grid(row=9, column=1)
+
+atHan = Button(gui, text = " artanh( ", fg = "brown", bg = "gold",
+                    command=lambda: operate("nm.arctanh("), height = 1, width = 7)
+atHan.grid(row=9, column=2)
+
+pi_const = Button(gui, text = " π ", fg = "brown", bg = "gold",
+                  command=lambda: operate("math.pi"), height = 1, width = 7)
+pi_const.grid(row=10, column=0)
+
+eul_const = Button(gui, text = " e ", fg = "brown", bg = "gold",
+                  command=lambda: operate("math.e"), height = 1, width = 7)
+eul_const.grid(row=10, column=1)
+
+logrit = Button(gui, text = " log( ", fg = "brown", bg = "gold",
+               command=lambda: operate("nm.log("), height = 1, width = 7)
+logrit.grid(row=10, column=2)
 
 dec_point = Button(gui, text = " . ", fg = "brown", bg = "gold",
                    command=lambda: operate("."), height = 1, width = 7)
-dec_point.grid(row=6, column=0)
+dec_point.grid(row=7, column=3)
+
+clr = Button(gui, text = "Clear", fg = "brown", bg = "gold",
+                   command=lambda: clear(), height = 1, width = 7)
+clr.grid(row=8, column=3)
+
+eq = Button(gui, text = " = ", fg = "brown", bg = "gold",
+                   command=lambda: equals(), height = 1, width = 7)
+eq.grid(row=9, column=3)
 
 gui.mainloop()
